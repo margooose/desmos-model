@@ -1,0 +1,64 @@
+import script "./scripts.js";
+
+
+pt = (plotPoint!());
+
+rx = 0;
+ry = .364;
+"This is a model of the Oxford Dam. I modeled it with blender, and then used desmoscript, found at https://github.com/radian628/desmoscript/, as well as the information on this wiki https://radian628.github.io/unofficial-desmos-wiki/ to graph it onto Desmos."
+
+rotation = (rx,ry);
+ns data {
+Xverts = getVerticesX!();
+Yverts = getVerticesY!();
+Zverts = getVerticesZ!();
+
+inds1 = getsIndices1!();
+inds2 = getsIndices2!();
+inds3 = getsIndices3!();
+
+reds = getColorsR!();
+greens = getColorsG!();
+blues = getColorsB!();
+}
+fn project(x, y, z) {
+  (x / z, y / z)
+};
+
+ns camera {
+  x = 0;
+  y = 0;
+  z = -10;
+}
+
+ns view {
+  x = (data.Xverts - camera.x);
+  y = (data.Yverts - camera.y);
+  z = (data.Zverts - camera.z);
+}
+
+ns rot1 {
+  x = view.x * cos(rotation.x) - view.z * sin(rotation.x);
+  y = view.y;
+  z = view.x * sin(rotation.x) + view.z * cos(rotation.x)
+}
+
+ns rot2 {
+  x = rot1.x;
+  y = rot1.y * cos(rotation.y) - rot1.z * sin(rotation.y);
+  z = rot1.y * sin(rotation.y) + rot1.z * cos(rotation.y)
+}
+
+show projVerts = project(rot2.x, rot2.y, rot2.z) @{color: "#ddd00ff"};
+
+vertexDistances = ((data.Xverts ^ 2) + (data.Yverts ^ 2) + (data.Zverts ^ 2)) ^ 0.5;
+
+polyAvgDist = (vertexDistances[data.inds1] + vertexDistances[data.inds2] + vertexDistances[data.inds3]) / 3;
+
+colors = sort(rgb(data.reds[data.inds1], data.greens[data.inds2], data.blues[data.inds3]), -polyAvgDist);
+
+unsortedPoly = polygon(projVerts[data.inds1], projVerts[data.inds2], projVerts[data.inds3]);
+
+show sort(unsortedPoly, -polyAvgDist) @{color:"#dddff00"};
+
+
